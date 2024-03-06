@@ -9,7 +9,9 @@ platforms = ["linux-64"]
 [tasks]
 
 [dependencies]
-python = ">=3.9"
+python = ">=3.12,<3.13"
+toml = ">=0.10.2,<0.11"
+six = ">=1.16.0,<1.17"
 
 [activation]
 scripts=["activate.sh"]
