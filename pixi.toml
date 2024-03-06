@@ -9,12 +9,28 @@ platforms = ["linux-64"]
 [tasks]
 
 [dependencies]
-python = ">=3.12,<3.13"
-toml = ">=0.10.2,<0.11"
-six = ">=1.16.0,<1.17"
-git = ">=2.44.0,<2.45"
-pip = ">=24.0,<25"
-cmake = ">=3.28.3,<3.29"
+python = ">=3.9"
+toml = ">=0.10.2"
+six = ">=1.16.0"
+git = ">=2.44.0"
+pip = ">=24.0"
+cmake = ">=3.28.3"
+sphinx = ">=7.2.6"
+pytest = ">=8.0.2"
 
 [activation]
 scripts=["activate.sh"]
+
+[feature.populse-db.dependencies]
+python-dateutil = "*"
+lark-parser = ">= 0.7.0"
+
+
+[feature.soma-python.dependencies]
+pydantic = "<2"
+
+[environments]
+default = [
+    "populse-db",
+    "soma-python"
+    ]
