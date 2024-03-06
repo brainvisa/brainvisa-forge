@@ -1,7 +1,0 @@
-[submodule "src/casa-distro"]
-	path = src/casa-distro
-	url = https://github.com/brainvisa/casa-distro
-	branch = conda
-[submodule "src/brainvisa-cmake"]
-	path = src/brainvisa-cmake
-	url = https://github.com/brainvisa/brainvisa-cmake
