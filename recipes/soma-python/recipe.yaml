@@ -1,0 +1,30 @@
+package:
+    name: soma-python
+    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+
+build:
+  number: 0
+  script: |
+    cd "$CASA_BUILD"
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-base
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-base-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-workflow
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-workflow-usrdoc
+
+requirements:
+  build:
+    - pip
+
+  run:
+    - python <=3.10
+    - six
+
+tests:
+  - script: "python -m soma.tests"
+    requirements:
+      run:
+        - pytest
+  - script: "python -m soma_workflow.test"
+    requirements:
+      run:
+        - pytest
