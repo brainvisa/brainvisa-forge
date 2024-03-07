@@ -1,6 +1,7 @@
 # pixi environments
-.pixi
-pixi.lock
-src
+.pixi/
+__pycache__/
 build
 forge
+pixi.lock
+src
