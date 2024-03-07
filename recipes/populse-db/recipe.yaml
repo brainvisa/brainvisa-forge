@@ -1,0 +1,28 @@
+package:
+    name: populse-db
+    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/src/populse_db/pyproject.toml").project.version }}
+
+source:
+  path: ../../src/populse_db
+
+build:
+  number: 0
+  script: |
+    cd "$CASA_BUILD"
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db-usrdoc
+
+requirements:
+  build:
+    - pip
+
+  run:
+    - python <=3.10
+    - lark-parser >0.7.0
+    - python-dateutil
+
+tests:
+  - script: "python -m populse_db.test"
+    requirements:
+      run:
+        - pytest
