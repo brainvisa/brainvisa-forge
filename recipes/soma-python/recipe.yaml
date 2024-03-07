@@ -11,6 +11,7 @@ build:
     env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-workflow
     env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-workflow-usrdoc
 
+requirements:
   run:
     - python >= 3.9
     - populse-db >= 3.0
