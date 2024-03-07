@@ -11,10 +11,3 @@ export BRAINVISA_BVMAKER_CFG="$CASA/conf/bv_maker.cfg"
 export LD_LIBRARY_PATH="$CASA/build/lib:$LD_LIBRARY_PATH"
 python_short=$(python -c 'import sys; print(".".join(str(i) for i in sys.version_info[0:2]))')
 export PYTHONPATH="$CASA/src/brainvisa-cmake/python:$CASA/build/lib/python${python_short}/site-packages"
-
-if [ ! -e "$CASA_SRC" ]; then
-    mkdir "$CASA_SRC"
-fi
-if [ ! -e "$CASA_SRC/brainvisa-cmake" ]; then
-    git -C "$CASA_SRC" clone https://github.com/brainvisa/brainvisa-cmake
-fi

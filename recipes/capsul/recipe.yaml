@@ -1,6 +1,7 @@
 package:
-    name: populse-db
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/src/populse_db/pyproject.toml").project.version }}
+    name: capsul
+    # version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/src/capsul/pyproject.toml").project.version }}
+    version: 3.0.0
 
 build:
   number: 0
