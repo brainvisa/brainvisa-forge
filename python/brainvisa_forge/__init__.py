@@ -1,10 +1,15 @@
+import json
 import os
 import pathlib
+import re
 import subprocess
-import yaml
 import sys
+import tempfile
+import toml
+import yaml
 
 pixi_root = pathlib.Path(os.environ["PIXI_PROJECT_ROOT"])
+
 
 def read_recipes(verbose=None):
     """
@@ -29,27 +34,32 @@ def read_recipes(verbose=None):
         recipes = {}
         for recipe_file in recipe_files:
             recipe_dir = recipe_file.parent
-            command = [
-                "rattler-build",
-                "build",
-                "--experimental",
-                "--render-only",
-                "-r",
-                str(recipe_dir),
-                "-q",
-            ]
-            if verbose:
-                print("Reading", recipe_file, file=verbose, flush=True)
-            try:
-                recipe_str = subprocess.check_output(command, stderr=subprocess.DEVNULL)
-            except subprocess.CalledProcessError:
-                print(
-                    "ERROR: command failed:",
-                    " ".join(command),
-                    file=sys.stderr,
-                    flush=True,
-                )
-                continue
+            with tempfile.TemporaryDirectory() as tmp:
+                command = [
+                    "rattler-build",
+                    "build",
+                    "--experimental",
+                    "--render-only",
+                    "-r",
+                    str(recipe_dir),
+                    "-q",
+                    "--output-dir",
+                    tmp,
+                ]
+                if verbose:
+                    print("Reading", recipe_file, file=verbose, flush=True)
+                try:
+                    recipe_str = subprocess.check_output(
+                        command, stderr=subprocess.DEVNULL
+                    )
+                except subprocess.CalledProcessError:
+                    print(
+                        "ERROR: command failed:",
+                        " ".join(command),
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                    continue
 
             recipe = yaml.safe_load(recipe_str)["recipe"]
             recipe["recipe_dir"] = str(recipe_dir)
@@ -67,7 +77,7 @@ def read_recipes(verbose=None):
     return recipes
 
 
-def parse_dependencies(recipes):
+def parse_recipes_dependencies(recipes):
     ready = set(recipes)
     waiting = set()
     dependent = {}
@@ -86,8 +96,8 @@ def parse_dependencies(recipes):
     return (ready, waiting, dependent, depends)
 
 
-def sorted_packages(recipes):
-    ready, waiting, dependent, depends = parse_dependencies(recipes)
+def sorted_recipes_packages(recipes):
+    ready, waiting, dependent, depends = parse_recipes_dependencies(recipes)
     done = set()
     while ready:
         package = ready.pop()
@@ -97,3 +107,26 @@ def sorted_packages(recipes):
             if all(i in done for i in depends.get(r, ())):
                 waiting.discard(r)
                 ready.add(r)
+
+
+def forged_packages(name_re):
+    if isinstance(name_re, str):
+        name_re = re.compile(name_re)
+    for repodata_file in (pixi_root / "forge").glob("*/repodata.json"):
+        with open(repodata_file) as f:
+            repodata = json.load(f)
+        for file, package_info in repodata.get("packages.conda", {}).items():
+            name = package_info["name"]
+            if name_re.match(name):
+                package_info["path"] = str(pathlib.Path(repodata_file).parent / file)
+                yield package_info
+
+
+def read_pixi_config():
+    with open(pixi_root / "pixi.toml") as f:
+        return toml.load(f, decoder=toml.TomlPreserveCommentDecoder())
+
+
+def write_pixi_config(pixi_config):
+    with open(pixi_root / "pixi.toml", "w") as f:
+        toml.dump(pixi_config, f, encoder=toml.TomlPreserveCommentEncoder())

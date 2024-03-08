@@ -8,7 +8,7 @@ package:
 
 source:
   git: https://github.com/uclouvain/openjpeg
-  tag:  v${{ openjpeg_version }}
+  tag:  v${{ version }}
 
 build:
   number: 0
@@ -22,7 +22,12 @@ requirements:
     - ${{ compiler('c') }}
     - cmake
     - make
+    - zlib
+    - libpng
 
+  run:
+    - zlib
+    - libpng
 
 about:
   homepage: https://github.com/uclouvain/openjpeg
