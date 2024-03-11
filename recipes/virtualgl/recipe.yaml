@@ -1,14 +1,13 @@
 context:
-  package_name: virtualgl
   version: 3.1.1
 
 package:
-  name: ${{ package_name }}
+  name: virtualgl
   version: ${{ version }}
 
 source:
   git: https://github.com/VirtualGL/virtualgl
-  tag:  ${{ virtualgl_version }}
+  tag:  ${{ version }}
 
 build:
   # skip:

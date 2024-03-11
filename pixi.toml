@@ -1,20 +1,19 @@
 [project]
-name = "brainvisa-forge"
+name = "soma-forge"
 version = "0.1.0"
 description = "Build BrainVISA projects from sources"
 authors = [ "BrainVISA team <contact@brainvisa.info>",]
-# A comment
-channels = [ "conda-forge", "https://brainvisa.info/download/conda"]
+channels = [ "conda-forge"]
 platforms = [ "linux-64",]
 
 [activation]
 scripts = [ "activate.sh",]
 
 [environments]
-default = [ "brainvisa-forge", "populse-db", "soma-python",]
+default = [ "soma-forge"]
 
 [dependencies]
-ipython = "*"
+
 
 [tasks.setup]
 cmd = "python -m brainvisa_forge setup"
@@ -23,25 +22,16 @@ cmd = "python -m brainvisa_forge setup"
 cmd = "python -m brainvisa_forge build"
 
 [tasks.forge]
-cmd = "python -m brainvisa_forge forge"
+cmd = [ "python", "-m", "brainvisa_forge", "forge",]
 
-[feature.brainvisa-forge.dependencies]
+[feature.soma-forge.dependencies]
 python = ">3.9"
+ipython = "*"
 toml = "*"
-six = "*"
+pyaml = "*"
 git = "*"
-pip = "*"
 cmake = "*"
+gcc = "*"
 sphinx = "*"
 pytest = "*"
 rattler-build = "*"
-pyaml = "*"
-
-[feature.populse-db.dependencies]
-python = "<=3.10"
-python-dateutil = "*"
-lark-parser = ">= 0.7.0"
-
-[feature.soma-python.dependencies]
-pydantic = "<2"
-pyqt = "*" # necessary to build soma-workflow documentation

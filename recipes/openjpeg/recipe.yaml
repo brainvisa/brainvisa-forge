@@ -1,9 +1,8 @@
 context:
-  package_name: openjpeg
   version: 2.5.2
 
 package:
-  name: ${{ package_name }}
+  name: openjpeg
   version: ${{ version }}
 
 source:

@@ -11,11 +11,39 @@ from . import (
     pixi_root,
     forged_packages,
     read_pixi_config,
+    write_pixi_config,
 )
 
 
-def setup():
-    (pixi_root / "src").mkdir(exist_ok=True)
+def setup(verbose=None):
+    # Find recipes for external projects and recipes build using bv_maker
+    external_recipes = []
+    bv_maker_recipes = []
+    bv_maker_packages = set()
+    for recipe in read_recipes():
+        script = recipe.get("build", {}).get("script")
+        if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
+            bv_maker_recipes.append(recipe)
+            bv_maker_packages.add(recipe["package"]["name"])
+        else:
+            external_recipes.append(recipe)
+
+    # Build external packages
+    for recipe in external_recipes:
+        package = recipe["package"]["name"]
+        if not any(forged_packages(re.escape(package))):
+            result = forge([package], force=False, show=False, verbose=verbose)
+            if result:
+                return result
+
+    # Add internal forge to pixi project
+    channel = f"file://{pixi_root / 'forge'}"
+    pixi_config = read_pixi_config()
+    if channel not in pixi_config["project"]["channels"]:
+        pixi_config["project"]["channels"].append(channel)
+        write_pixi_config(pixi_config)
+
+    # Download brainvisa-cmake sources
     if not (pixi_root / "src" / "brainvisa-cmake").exists():
         subprocess.check_call(
             [
@@ -27,6 +55,59 @@ def setup():
             ]
         )
 
+    # Compute all packages build and run dependencies
+    dependencies = {}
+    for recipe in external_recipes + bv_maker_recipes:
+        for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
+            "requirements", {}
+        ).get("build", []):
+            if not isinstance(requirement, str) or requirement.startswith("$"):
+                continue
+            package, constraint = (requirement.split(None, 1) + [None])[:2]
+            if package not in bv_maker_packages:
+                dependencies.setdefault(package, set())
+                if constraint:
+                    existing_constraint = dependencies[package]
+                    if constraint not in existing_constraint:
+                        existing_constraint.add(constraint)
+                        dependencies[package] = existing_constraint
+
+    # Add dependencies to pixi project
+    remove = []
+    add = []
+    for package, constraint in dependencies.items():
+        pixi_constraint = pixi_config.get("dependencies", {}).get(package)
+        if pixi_constraint is not None:
+            if pixi_constraint == "*":
+                pixi_constraint = set()
+            else:
+                pixi_constraint = set(pixi_constraint.split(","))
+            if constraint == "*":
+                constraint = set()
+            if pixi_constraint != constraint:
+                remove.append(package)
+            else:
+                continue
+        if constraint:
+            add.append(f"{package} {','.join(constraint)}")
+        else:
+            add.append(f"{package} =*")
+    try:
+        if remove:
+            command = ["pixi", "remove"] + remove
+            subprocess.check_call(command)
+        if add:
+            command = ["pixi", "add"] + add
+            subprocess.check_call(command)
+    except subprocess.CalledProcessError:
+        print(
+            "ERROR command failed:",
+            " ".join(f"'{i}'" for i in command),
+            file=sys.stdout,
+            flush=True,
+        )
+        return 1
+        
 
 def build():
     (pixi_root / "build" / "success").unlink(missing_ok=True)
@@ -46,8 +127,7 @@ def forge(packages, force, show, verbose=None):
     if not (pixi_root / "build" / "success").exists():
         build()
     channels = read_pixi_config()["project"]["channels"]
-    recipes = read_recipes(verbose=True)
-    for package in sorted_recipes_packages(recipes):
+    for package, recipe_dir in sorted_recipes_packages():
         if selector.match(package):
             if not force:
                 # Check for the package exsitence
@@ -61,7 +141,7 @@ def forge(packages, force, show, verbose=None):
                     continue
             if verbose:
                 print(
-                    f'Build {package} from {recipes[package]["recipe_dir"]}',
+                    f"Build {package}",
                     file=verbose,
                     flush=True,
                 )
@@ -76,7 +156,7 @@ def forge(packages, force, show, verbose=None):
                     "--experimental",
                     "--no-build-id",
                     "-r",
-                    recipes[package]["recipe_dir"],
+                    recipe_dir,
                     "--output-dir",
                     str(forge),
                 ]
