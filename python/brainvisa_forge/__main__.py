@@ -45,6 +45,7 @@ def setup(verbose=None):
 
     # Download brainvisa-cmake sources
     if not (pixi_root / "src" / "brainvisa-cmake").exists():
+        (pixi_root / "src").mkdir(exist_ok=True)
         subprocess.check_call(
             [
                 "git",
