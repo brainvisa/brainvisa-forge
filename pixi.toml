@@ -3,17 +3,16 @@ name = "soma-forge"
 version = "0.1.0"
 description = "Build BrainVISA projects from sources"
 authors = [ "BrainVISA team <contact@brainvisa.info>",]
-channels = [ "conda-forge"]
+channels = [ "conda-forge", ]
 platforms = [ "linux-64",]
 
 [activation]
 scripts = [ "activate.sh",]
 
 [environments]
-default = [ "soma-forge"]
+default = [ "soma-forge",]
 
 [dependencies]
-
 
 [tasks.setup]
 cmd = "python -m brainvisa_forge setup"
@@ -35,3 +34,4 @@ gcc = "*"
 sphinx = "*"
 pytest = "*"
 rattler-build = "*"
+pip="*"
