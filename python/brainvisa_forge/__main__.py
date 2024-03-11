@@ -57,7 +57,7 @@ def setup(verbose=None):
         )
 
     # Compute all packages build and run dependencies
-    dependencies = {}
+    dependencies = {i["package"]["name"]: set() for i in external_recipes}
     for recipe in external_recipes + bv_maker_recipes:
         for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
             "requirements", {}
