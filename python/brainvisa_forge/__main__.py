@@ -32,7 +32,7 @@ def setup(verbose=None):
     for recipe in external_recipes:
         package = recipe["package"]["name"]
         if not any(forged_packages(re.escape(package))):
-            result = forge([package], force=False, show=False, verbose=verbose)
+            result = forge([package], force=False, show=False, check_build=False, verbose=verbose)
             if result:
                 return result
 
@@ -116,7 +116,7 @@ def build():
         pass
 
 
-def forge(packages, force, show, verbose=None):
+def forge(packages, force, show, check_build=True,verbose=None):
     if show and verbose is None:
         verbose = True
     if verbose is True:
@@ -124,7 +124,7 @@ def forge(packages, force, show, verbose=None):
     if not packages:
         packages = ["*"]
     selector = re.compile("|".join(f"(?:{fnmatch.translate(i)})" for i in packages))
-    if not (pixi_root / "build" / "success").exists():
+    if check_build and not (pixi_root / "build" / "success").exists():
         build()
     channels = read_pixi_config()["project"]["channels"]
     for package, recipe_dir in sorted_recipes_packages():
