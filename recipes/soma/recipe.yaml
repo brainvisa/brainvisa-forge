@@ -1,0 +1,46 @@
+package:
+    name: soma
+    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+
+build:
+  number: 0
+  script: |
+    cd "$CASA_BUILD"
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-io
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-io-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-free
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-free-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-gpl
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-gpl-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-brainvisa-share
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-brainvisa-share-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-axon
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-axon-usrdoc
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - libstdcxx-devel_linux-64
+    - cmake
+    - make
+    - libblitz
+    - boost-cpp
+    - dcmtk
+    - doxygen
+    - soma-python
+
+  run:
+    - libblitz
+    - boost-cpp
+    - dcmtk
+    - soma-python
+
+# tests:
+#   - script: "python -m soma.tests"
+#     requirements:
+#       run:
+#         - pytest
+#   - script: "python -m soma_workflow.test"
+#     requirements:
+#       run:
+#         - pytest
