@@ -10,6 +10,9 @@ build:
     env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db-usrdoc
 
 requirements:
+  build:
+    - make
+  
   run:
     - python <=3.10
     - lark-parser >0.7.0
