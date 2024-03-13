@@ -16,6 +16,8 @@ requirements:
     - python >=3.9
     - populse-db >=3.0
     - pydantic <2
+    - pyqt
+    - pyqtwebengine
 
 tests:
   - script: "python -m soma.tests"
