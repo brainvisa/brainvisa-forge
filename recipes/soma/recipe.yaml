@@ -26,6 +26,8 @@ requirements:
     - libsigcpp <3
     - libblitz
     - boost-cpp
+    - gfortran
+    - graphviz
     - dcmtk
     - doxygen
     - pkgconfig
@@ -36,6 +38,9 @@ requirements:
     - libblitz
     - boost-cpp
     - dcmtk
+    - soma-python
+    - dcmtk
+    - numpy
     - soma-python
 
 # tests:
