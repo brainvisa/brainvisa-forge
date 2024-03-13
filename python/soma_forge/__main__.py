@@ -132,7 +132,7 @@ def forge(packages, force, show, check_build=True,verbose=None):
         if selector.match(package):
             if not force:
                 # Check for the package exsitence
-                if any(forged_packages(re.escape(package))):
+                if any(forged_packages(f"^{re.escape(package)}$")):
                     if verbose:
                         print(
                             f"Skip existing package {package}",
