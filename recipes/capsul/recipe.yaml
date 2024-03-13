@@ -11,6 +11,9 @@ build:
     env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db-usrdoc
 
 requirements:
+  build:
+    - make
+  
   run:
     - soma-python
 

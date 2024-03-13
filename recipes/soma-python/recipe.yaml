@@ -21,6 +21,7 @@ requirements:
     - pydantic <2
     - pyqt
     - pyqtwebengine
+    - numpy
 
 tests:
   - script: "python -m soma.tests"
