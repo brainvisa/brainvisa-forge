@@ -43,7 +43,6 @@ requirements:
     - dcmtk
     - numpy
     - pyyaml
-    - ipkernel
     - soma-python
 
 tests:
