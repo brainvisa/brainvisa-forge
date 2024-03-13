@@ -176,7 +176,7 @@ def forge(packages, force, show, check_build=True,verbose=None):
 
 
 parser = argparse.ArgumentParser(
-    prog="python -m brainvisa_forge",
+    prog="python -m soma_forge",
 )
 
 subparsers = parser.add_subparsers(
