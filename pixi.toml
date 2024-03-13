@@ -23,6 +23,9 @@ cmd = "python -m soma_forge build"
 [tasks.forge]
 cmd = [ "python", "-m", "soma_forge", "forge",]
 
+[tasks.test]
+cmd = [ "python", "-m", "soma_forge", "test",]
+
 [feature.soma-forge.dependencies]
 python = ">3.9"
 ipython = "*"

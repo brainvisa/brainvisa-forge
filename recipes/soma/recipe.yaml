@@ -32,6 +32,7 @@ requirements:
     - doxygen
     - pkgconfig
     - numpy
+    - pyyaml
     - soma-python
 
   run:
@@ -41,14 +42,17 @@ requirements:
     - soma-python
     - dcmtk
     - numpy
+    - pyyaml
+    - ipkernel
     - soma-python
 
-# tests:
-#   - script: "python -m soma.tests"
-#     requirements:
-#       run:
-#         - pytest
-#   - script: "python -m soma_workflow.test"
-#     requirements:
-#       run:
-#         - pytest
+tests:
+  - script: |
+      cd "$CASA_BUILD"
+      python -m soma_forge test soma
+      python -m soma_forge test aims
+      python -m soma_forge test axon
+
+    requirements:
+      run:
+        - cmake

@@ -2,10 +2,9 @@ import json
 import os
 import pathlib
 import re
-
-# import subprocess
-# import sys
-# import tempfile
+import shlex
+import subprocess
+import sys
 import toml
 import yaml
 
@@ -18,72 +17,6 @@ def read_recipes(verbose=None):
             recipe = yaml.safe_load(f)
             recipe["recipe_dir"] = str(recipe_file.parent)
             yield recipe
-
-
-# def read_recipes(verbose=None):
-#     """
-#     Read all recipe.yaml files via rattler-build to let it resolve
-#     the content of the file that may contain jinja-like expressions.
-#     This is only package name.
-
-#     Return a dict whos keys are package names and values are recipe
-#     dicts. In each recipe dict, a "recipe_dir" item is added containing
-#     the directory of the recipe file.
-#     """
-#     if verbose is True:
-#         verbose = sys.stdout
-#     recipes = None
-#     recipe_files = list((pixi_root / "recipes").glob("*/recipe.yaml"))
-#     recipes_file = pixi_root / "recipes" / "recipes.yaml"
-#     if recipes_file.exists():
-#         if max(f.stat().st_mtime for f in recipe_files) <= recipes_file.stat().st_mtime:
-#             with open(recipes_file) as f:
-#                 recipes = yaml.safe_load(f)
-#     if not recipes:
-#         recipes = {}
-#         for recipe_file in recipe_files:
-#             recipe_dir = recipe_file.parent
-#             with tempfile.TemporaryDirectory() as tmp:
-#                 command = [
-#                     "rattler-build",
-#                     "build",
-#                     "--experimental",
-#                     "--render-only",
-#                     "-r",
-#                     str(recipe_dir),
-#                     "-q",
-#                     "--output-dir",
-#                     tmp,
-#                 ]
-#                 if verbose:
-#                     print("Reading", recipe_file, file=verbose, flush=True)
-#                 try:
-#                     recipe_str = subprocess.check_output(
-#                         command, stderr=subprocess.DEVNULL
-#                     )
-#                 except subprocess.CalledProcessError:
-#                     print(
-#                         "ERROR: command failed:",
-#                         " ".join(command),
-#                         file=sys.stderr,
-#                         flush=True,
-#                     )
-#                     continue
-
-#             recipe = yaml.safe_load(recipe_str)["recipe"]
-#             recipe["recipe_dir"] = str(recipe_dir)
-#             if verbose:
-#                 print(
-#                     "  ->",
-#                     recipe["package"]["name"],
-#                     recipe["package"]["version"],
-#                     file=verbose,
-#                     flush=True,
-#                 )
-#             recipes[recipe["package"]["name"]] = recipe
-#         with open(recipes_file, "w") as f:
-#             yaml.safe_dump(recipes, f)
-#     return recipes
 
 
 def sorted_recipes_packages():
@@ -138,3 +71,74 @@ def read_pixi_config():
 def write_pixi_config(pixi_config):
     with open(pixi_root / "pixi.toml", "w") as f:
         toml.dump(pixi_config, f, encoder=toml.TomlPreserveCommentEncoder())
+
+
+def get_test_commands(config=None, log_lines=None):
+    """
+    Use ctest to extract command lines to execute to run tests.
+    This function returns a dictionary whose keys are name of a test (i.e.
+    'axon', 'soma', etc.) and values are a list of commands to run to perform
+    the test.
+
+    If casa-distro is used, three options must be given:
+      casa_distro_cmd: the casa_distro executable
+      config: a casa-distro environment dictionary.
+      log_lines: a list that is extended with log lines for
+                 the test extraction process.
+    """
+    cmd = ["ctest", "--print-labels"]
+    # universal_newlines is the old name to request text-mode (text=True)
+    o = subprocess.check_output(cmd, bufsize=-1, universal_newlines=True)
+    labels = [i.strip() for i in o.split("\n")[2:] if i.strip()]
+    if log_lines is not None:
+        log_lines += ["$ " + " ".join(shlex.quote(arg) for arg in cmd), o, "\n"]
+    tests = {}
+    for label in labels:
+        cmd = ["ctest", "-V", "-L", f"^{label}$"]
+        env = os.environ.copy()
+        env["BRAINVISA_TEST_REMOTE_COMMAND"] = "echo"
+        p = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=-1,
+            universal_newlines=True,
+            env=env,
+        )
+        o, stderr = p.communicate()
+        if log_lines is not None:
+            log_lines += ["$ " + " ".join(shlex_quote(arg) for arg in cmd), o, "\n"]
+        if p.returncode != 0:
+            # We want to hide stderr unless ctest returns a nonzero exit
+            # code. In the case of test filtering where no tests are
+            # matched (e.g. with ctest_options=['-R', 'dummyfilter']), the
+            # annoying message 'No tests were found!!!' is printed to
+            # stderr by ctest, but it exits with return code 0.
+            sys.stderr.write(stderr)
+            raise RuntimeError("ctest failed with the above error")
+        o = o.split("\n")
+        # Extract the third line that follows each line containing ': Test
+        # command:'
+        commands = []
+        i = 0
+        while i < len(o):
+            line = o[i]
+            m = re.match(r"(^[^:]*): Test command: .*$", line)
+            if m:
+                prefix = f"{m.group(1)}: "
+                command = None
+                i += 1
+                while i < len(o) and o[i].startswith(prefix):
+                    command = o[i][len(prefix) :]
+                    i += 1
+                if command:
+                    commands.append(command)
+            i += 1
+        if commands:
+            tests[label] = commands
+    if log_lines is not None:
+        log_lines += [
+            "Final test dictionary:",
+            json.dumps(tests, indent=4, separators=(",", ": ")),
+        ]
+    return tests

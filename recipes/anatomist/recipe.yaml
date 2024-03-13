@@ -1,0 +1,36 @@
+package:
+    name: anatomist
+    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+
+build:
+  number: 0
+  script: |
+    cd "$CASA_BUILD"
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-anatomist-free
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-anatomist-free-usrdoc
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-anatomist-gpl
+    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-anatomist-gpl-usrdoc
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - libstdcxx-devel_linux-64
+    - cmake
+    - make
+    - soma
+    - qwt
+
+  run:
+    - soma
+    - qwt
+
+# tests:
+#   - script: |
+#       cd "$CASA_BUILD"
+#       python -m soma_forge test soma
+#       python -m soma_forge test aims
+#       python -m soma_forge test axon
+
+#     requirements:
+#       run:
+#         - cmake

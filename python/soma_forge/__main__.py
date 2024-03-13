@@ -1,5 +1,6 @@
 import argparse
 import fnmatch
+import os
 import re
 import shutil
 import subprocess
@@ -12,6 +13,7 @@ from . import (
     forged_packages,
     read_pixi_config,
     write_pixi_config,
+    get_test_commands,
 )
 
 
@@ -32,7 +34,9 @@ def setup(verbose=None):
     for recipe in external_recipes:
         package = recipe["package"]["name"]
         if not any(forged_packages(re.escape(package))):
-            result = forge([package], force=False, show=False, check_build=False, verbose=verbose)
+            result = forge(
+                [package], force=False, show=False, check_build=False, verbose=verbose
+            )
             if result:
                 return result
 
@@ -108,7 +112,7 @@ def setup(verbose=None):
             flush=True,
         )
         return 1
-        
+
 
 def build():
     (pixi_root / "build" / "success").unlink(missing_ok=True)
@@ -117,7 +121,7 @@ def build():
         pass
 
 
-def forge(packages, force, show, check_build=True,verbose=None):
+def forge(packages, force, show, test=True, check_build=True, verbose=None):
     if show and verbose is None:
         verbose = True
     if verbose is True:
@@ -161,6 +165,8 @@ def forge(packages, force, show, check_build=True,verbose=None):
                     "--output-dir",
                     str(forge),
                 ]
+                if not test:
+                    command.append("--no-test")
                 for i in channels + [f"file://{str(forge)}"]:
                     command.extend(["-c", i])
                 try:
@@ -169,10 +175,44 @@ def forge(packages, force, show, check_build=True,verbose=None):
                     print(
                         "ERROR command failed:",
                         " ".join(f"'{i}'" for i in command),
-                        file=sys.stdout,
+                        file=sys.stderr,
                         flush=True,
                     )
                     return 1
+
+def test_ref():
+    test_ref_data_dir = os.environ.get("BRAINVISA_TEST_REF_DATA_DIR")
+    if not test_ref_data_dir:
+        print("No value for BRAINVISA_TEST_REF_DATA_DIR", file=sys.stderr, flush=True)
+        return 1
+    os.makedirs(test_ref_data_dir, exists_ok=True)
+
+def test(name):
+    test_commands = get_test_commands()
+    if name is None:
+        print(", ".join(test_commands))
+    else:
+        test_run_data_dir = os.environ.get("BRAINVISA_TEST_RUN_DATA_DIR")
+        if not test_run_data_dir:
+            print("No value for BRAINVISA_TEST_RUN_DATA_DIR", file=sys.stderr, flush=True)
+            return 1
+        os.makedirs(test_run_data_dir, exists_ok=True)
+
+        commands = test_commands.get(name)
+        if commands is None:
+            print("ERROR: No test named", name, file=sys.stderr, flush=True)
+            return 1
+        for command in commands:
+            try:
+                subprocess.check_call(command, shell=True)
+            except subprocess.CalledProcessError:
+                print(
+                    "ERROR command failed:",
+                    command,
+                    file=sys.stderr,
+                    flush=True,
+                )
+                return 1
 
 
 parser = argparse.ArgumentParser(
@@ -200,6 +240,12 @@ parser_forge.add_argument(
     help="build selected packages even it they exists",
 )
 parser_forge.add_argument(
+    "--no-test",
+    dest="test",
+    action="store_false",
+    help="do not run tests while building packages",
+)
+parser_forge.add_argument(
     "-s",
     "--show",
     action="store_true",
@@ -211,8 +257,17 @@ parser_forge.add_argument(
     nargs="*",
     help="select packages using their names or Unix shell-like patterns",
 )
+parser_test = subparsers.add_parser("test", help="manage brainvisa-cmake tests")
+parser_test.add_argument(
+    "name",
+    type=str,
+    nargs="?",
+    default=None,
+    help="name of the test to run. No value just list the possible names.",
+)
+parser_test.set_defaults(func=test)
 
 args = parser.parse_args(sys.argv[1:])
 kwargs = vars(args).copy()
 del kwargs["func"]
-args.func(**kwargs)
+sys.exit(args.func(**kwargs))
