@@ -23,10 +23,13 @@ requirements:
     - libstdcxx-devel_linux-64
     - cmake
     - make
+    - libsigcpp <3
     - libblitz
     - boost-cpp
     - dcmtk
     - doxygen
+    - pkgconfig
+    - numpy
     - soma-python
 
   run:
