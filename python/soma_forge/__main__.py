@@ -124,8 +124,8 @@ def build():
     (pixi_root / "build" / "success").unlink(missing_ok=True)
     # Do not take into account failure on bv_maker sources as long as
     # unstandard branches are used.
-    subprocess.call("bv_maker sources")
-    subprocess.check_call("bv_maker configure build doc")
+    subprocess.call(["bv_maker", "sources"])
+    subprocess.check_call(["bv_maker", "configure", "build", "doc"])
     with open(pixi_root / "build" / "success", "w"):
         pass
 
