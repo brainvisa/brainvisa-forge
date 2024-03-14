@@ -6,16 +6,15 @@ build:
   number: 0
   script: |
     cd "$CASA_BUILD"
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-io
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-soma-io-usrdoc
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-free
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-free-usrdoc
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-gpl
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-aims-gpl-usrdoc
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-brainvisa-share
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-brainvisa-share-usrdoc
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-axon
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-axon-usrdoc
+    export BRAINVISA_INSTALL_PREFIX="$PREFIX"
+    for component in soma-io aims-free aims-gpl brainvisa-share axon; do
+      make install-${component}
+      make install-${component}-dev
+      make install-${component}-usrdoc
+      make install-${component}-devdoc
+      make install-${component}-devdoc
+      make install-${component}-devdoc
+    done
 
 requirements:
   build:

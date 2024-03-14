@@ -6,8 +6,15 @@ build:
   number: 0
   script: |
     cd "$CASA_BUILD"
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db
-    env BRAINVISA_INSTALL_PREFIX="$PREFIX" make install-populse-db-usrdoc
+    export BRAINVISA_INSTALL_PREFIX="$PREFIX"
+    for component in populse-db; do
+      make install-${component}
+      make install-${component}-dev
+      make install-${component}-usrdoc
+      make install-${component}-devdoc
+      make install-${component}-devdoc
+      make install-${component}-devdoc
+    done
 
 requirements:
   build:

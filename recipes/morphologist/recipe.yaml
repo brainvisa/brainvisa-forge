@@ -1,5 +1,5 @@
 package:
-    name: soma-python
+    name: morphologist
     version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
 
 build:
@@ -7,7 +7,7 @@ build:
   script: |
     cd "$CASA_BUILD"
     export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-    for component in soma-base soma-workflow; do
+    for component in morphologist-nonfree morphologist-gpl morphologist-ui sulci-nonfree morpho-deepsulci; do
       make install-${component}
       make install-${component}-dev
       make install-${component}-usrdoc
@@ -18,23 +18,24 @@ build:
 
 requirements:
   build:
+    - ${{ compiler('cxx') }}
+    - libstdcxx-devel_linux-64
+    - cmake
     - make
+    - soma
+    - anatomist
 
   run:
-    - python >=3.9
-    - populse-db >=3.0
-    - pydantic <2
-    - pyqt
-    - pyqtwebengine
-    - numpy
-    - ipykernel
+    - soma
+    - anatomist
 
-tests:
-  - script: "python -m soma.tests"
-    requirements:
-      run:
-        - pytest
-  - script: "python -m soma_workflow.test"
-    requirements:
-      run:
-        - pytest
+# tests:
+#   - script: |
+#       cd "$CASA_BUILD"
+#       python -m soma_forge test soma
+#       python -m soma_forge test aims
+#       python -m soma_forge test axon
+
+#     requirements:
+#       run:
+#         - cmake
