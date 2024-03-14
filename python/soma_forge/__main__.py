@@ -66,7 +66,13 @@ def setup(verbose=None):
         for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
             "requirements", {}
         ).get("build", []):
-            if not isinstance(requirement, str) or requirement.startswith("$"):
+            if (
+                not isinstance(requirement, str)
+                or requirement.startswith("$")
+                or requirement.split()[0] == "mesalib"
+            ):
+                # mesalib is required to compile virtualgl
+                # but makes Anatomist crash
                 continue
             package, constraint = (requirement.split(None, 1) + [None])[:2]
             if package not in bv_maker_packages:
@@ -116,7 +122,10 @@ def setup(verbose=None):
 
 def build():
     (pixi_root / "build" / "success").unlink(missing_ok=True)
-    subprocess.check_call("bv_maker")
+    # Do not take into account failure on bv_maker sources as long as
+    # unstandard branches are used.
+    subprocess.call("bv_maker sources")
+    subprocess.check_call("bv_maker configure build doc")
     with open(pixi_root / "build" / "success", "w"):
         pass
 
@@ -180,12 +189,14 @@ def forge(packages, force, show, test=True, check_build=True, verbose=None):
                     )
                     return 1
 
+
 def test_ref():
     test_ref_data_dir = os.environ.get("BRAINVISA_TEST_REF_DATA_DIR")
     if not test_ref_data_dir:
         print("No value for BRAINVISA_TEST_REF_DATA_DIR", file=sys.stderr, flush=True)
         return 1
     os.makedirs(test_ref_data_dir, exists_ok=True)
+
 
 def test(name):
     test_commands = get_test_commands()
@@ -194,7 +205,9 @@ def test(name):
     else:
         test_run_data_dir = os.environ.get("BRAINVISA_TEST_RUN_DATA_DIR")
         if not test_run_data_dir:
-            print("No value for BRAINVISA_TEST_RUN_DATA_DIR", file=sys.stderr, flush=True)
+            print(
+                "No value for BRAINVISA_TEST_RUN_DATA_DIR", file=sys.stderr, flush=True
+            )
             return 1
         os.makedirs(test_run_data_dir, exists_ok=True)
 
