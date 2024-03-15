@@ -23,7 +23,7 @@ requirements:
   run:
     - soma
     - anatomist
-    - soma-freesurver
+    - soma-freesurfer
 
 # tests:
 #   - script: "python -m soma.tests"
