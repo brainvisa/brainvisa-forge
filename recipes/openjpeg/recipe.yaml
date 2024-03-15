@@ -15,7 +15,7 @@ build:
     # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
     git -C "$SRC_DIR" checkout v${{ version }}
     cmake -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_DIR"
-    make
+    make -j8
     make install
 
 requirements:
@@ -25,10 +25,12 @@ requirements:
     - make
     - zlib
     - libpng
+    - lcms2
 
   run:
     - zlib
     - libpng
+    - lcms2
 
 about:
   homepage: https://github.com/uclouvain/openjpeg

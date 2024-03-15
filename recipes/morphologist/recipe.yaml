@@ -24,10 +24,12 @@ requirements:
     - make
     - soma
     - anatomist
+    - soma-spm
 
   run:
     - soma
     - anatomist
+    - soma-spm
 
 # tests:
 #   - script: |

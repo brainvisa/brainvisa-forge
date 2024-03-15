@@ -29,6 +29,7 @@ requirements:
     - soma
     - qwt
     - matplotlib ==3.4.3
+    - virtualgl
 
 # tests:
 #   - script: |
