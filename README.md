@@ -27,6 +27,11 @@ cd /tmp/test
 pixi shell
 ...
 ```
+## Packages
+
+The packages currently build have the following dependencies:
+
+![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/a1196bb3-9bc6-40b2-ac57-945d7bbd052e)
 
 ## Building from sources and packaging
 
