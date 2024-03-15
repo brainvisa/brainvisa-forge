@@ -73,18 +73,12 @@ def write_pixi_config(pixi_config):
         toml.dump(pixi_config, f, encoder=toml.TomlPreserveCommentEncoder())
 
 
-def get_test_commands(config=None, log_lines=None):
+def get_test_commands(log_lines=None):
     """
     Use ctest to extract command lines to execute to run tests.
     This function returns a dictionary whose keys are name of a test (i.e.
     'axon', 'soma', etc.) and values are a list of commands to run to perform
     the test.
-
-    If casa-distro is used, three options must be given:
-      casa_distro_cmd: the casa_distro executable
-      config: a casa-distro environment dictionary.
-      log_lines: a list that is extended with log lines for
-                 the test extraction process.
     """
     cmd = ["ctest", "--print-labels"]
     # universal_newlines is the old name to request text-mode (text=True)
@@ -107,7 +101,7 @@ def get_test_commands(config=None, log_lines=None):
         )
         o, stderr = p.communicate()
         if log_lines is not None:
-            log_lines += ["$ " + " ".join(shlex_quote(arg) for arg in cmd), o, "\n"]
+            log_lines += ["$ " + " ".join(shlex.quote(arg) for arg in cmd), o, "\n"]
         if p.returncode != 0:
             # We want to hide stderr unless ctest returns a nonzero exit
             # code. In the case of test filtering where no tests are

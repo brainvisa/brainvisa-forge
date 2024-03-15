@@ -228,6 +228,49 @@ def test(name):
                 return 1
 
 
+def dot(conda):
+    bv_maker_packages = set()
+    external_packages = set()
+    conda_forge_packages = set()
+    dependencies = {}
+
+    recipes = list(read_recipes())
+    for recipe in recipes:
+        script = recipe.get("build", {}).get("script")
+        if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
+            bv_maker_packages.add(recipe["package"]["name"])
+        else:
+            external_packages.add(recipe["package"]["name"])
+
+    build_packages = bv_maker_packages.union(external_packages)
+    for recipe in recipes:
+        for requirement in recipe.get("requirements").get("run", []):
+            if not isinstance(requirement, str) or requirement.startswith('$'):
+                continue
+            dependency = requirement.split(None, 1)[0]
+            if dependency not in build_packages:
+                conda_forge_packages.add(dependency)
+            dependencies.setdefault(recipe["package"]["name"], set()).add(
+                dependency
+            )
+
+    print("digraph {")
+    print("  node [shape=box, color=black, style=filled]")
+    for package in bv_maker_packages:
+        print(f'  "{package}" [fillcolor="aquamarine"]')
+    for package in external_packages:
+        print(f'  "{package}" [fillcolor="bisque"]')
+    if conda:
+        for package in conda_forge_packages:
+            print(f'"{package}" [fillcolor="aliceblue"]')
+
+    for src, dests in dependencies.items():
+        for dest in dests:
+            if conda or dest not in conda_forge_packages:
+                print(f'"{src}" -> "{dest}"')
+    print("}")
+
+
 parser = argparse.ArgumentParser(
     prog="python -m soma_forge",
 )
@@ -279,6 +322,17 @@ parser_test.add_argument(
     help="name of the test to run. No value just list the possible names.",
 )
 parser_test.set_defaults(func=test)
+
+parser_dot = subparsers.add_parser(
+    "dot", help="create a graphviz dot file showing packages dependencies"
+)
+parser_dot.add_argument(
+    "-c",
+    "--conda",
+    action="store_true",
+    help="include conda-forge packages",
+)
+parser_dot.set_defaults(func=dot)
 
 args = parser.parse_args(sys.argv[1:])
 kwargs = vars(args).copy()
