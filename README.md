@@ -32,7 +32,7 @@ pixi shell
 The packages currently build have the following dependencies:
 green = package containing brainvisa-cmake components ; bisque = external dependency not found in conda-forge ; light blue = package from conda-forge.
 
-![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/a1196bb3-9bc6-40b2-ac57-945d7bbd052e)
+![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/66c52733-8714-4a29-be68-8f42161fe4a1)
 
 ## Building from sources and packaging
 
