@@ -30,12 +30,14 @@ pixi shell
 ## Packages
 
 The packages currently build have the following dependencies:
+green = package containing brainvisa-cmake components ; bisque = external dependency not found in conda-forge ; light blue = package from conda-forge.
 
 ![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/a1196bb3-9bc6-40b2-ac57-945d7bbd052e)
 
 ## Building from sources and packaging
 
-Then setup the build environment. This will build and create the packages for external software that are not already in conda-forge and then download sources of brainvisa-cmake:
+A build and/or packaging environement is entirerly contained in a single directory. This directory is first initialized by cloning casa-forge GitHub project. Then a setup script is executed, it will create the packages for external software, install all required dependencies and download brainvisa-cmake sources to make `bv_maker` ready to use.
+
 ```
 git clone https://github.com/brainvisa/casa-forge
 cd casa-forge
@@ -56,5 +58,4 @@ If one needs to make packages, use the following command:
 pixi run forge --no-test
 ```
 
-If not already done, this runs `pixi run build` that executes `bv_maker` and create a `build/success` file when all steps (except sources) are successful. Then it creates non existing packages for all internal or external software. By default, packages are only created when tests are successful but some packages (such as `soma` that contains Aims) needs some reference data for testing therefor I recommend to skip tests until a procedure is created to generate these data.
-
+If not already done, this runs `pixi run build` that executes `bv_maker` and create a `build/success` file when all steps (except sources) are successful. Then it creates non existing packages for all internal or external software. By default, packages are only created when tests are successful but some packages (such as `soma` that contains Aims) needs some reference data for testing therefor I recommend to skip tests with `--no-test` until a procedure is created to generate these data.
