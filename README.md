@@ -36,21 +36,21 @@ green = package containing brainvisa-cmake components ; bisque = external depend
 
 ## Building from sources and packaging
 
-A build and/or packaging environement is entirerly contained in a single directory. This directory is first initialized by cloning casa-forge GitHub project. Then a setup script is executed, it will create the packages for external software, install all required dependencies and download brainvisa-cmake sources to make `bv_maker` ready to use.
+A build and/or packaging environement is entirerly contained in a single directory. This directory is first initialized by cloning soma-forge GitHub project. Then a setup script is executed, it will create the packages for external software, install all required dependencies and download brainvisa-cmake sources to make `bv_maker` ready to use.
 
 ```
-git clone https://github.com/brainvisa/casa-forge
-cd casa-forge
+git clone https://github.com/brainvisa/soma-forge
+cd soma-forge
 pixi run setup
 ```
 
 Now one can activate the environment with the following command:
 ```
-# be sure to be in the casa-forge directory
+# be sure to be in the soma-forge directory
 pixi shell
 ```
 
-`bv_maker` cand be used directly and built programs are in the PATH and ready to be used.
+`bv_maker` can be used directly and built programs are in the PATH and ready to be used.
 
 If one needs to make packages, use the following command:
 
@@ -58,4 +58,4 @@ If one needs to make packages, use the following command:
 pixi run forge --no-test
 ```
 
-If not already done, this runs `pixi run build` that executes `bv_maker` and create a `build/success` file when all steps (except sources) are successful. Then it creates non existing packages for all internal or external software. By default, packages are only created when tests are successful but some packages (such as `soma` that contains Aims) needs some reference data for testing therefor I recommend to skip tests with `--no-test` until a procedure is created to generate these data.
+If not already done, this runs `pixi run build` that executes `bv_maker` and creates a `build/success` file when all steps (except sources) are successful. Then it creates non existing packages for all internal or external software. By default, packages are only created when tests are successful but some packages (such as `soma` that contains Aims) need some reference data for testing therefore I recommend to skip tests with `--no-test` until a procedure is created to generate these data.
