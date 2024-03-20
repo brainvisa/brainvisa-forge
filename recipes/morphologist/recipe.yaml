@@ -32,6 +32,8 @@ requirements:
     - anatomist
     - soma-spm
     - capsul
+    - pytorch
+    - torchvision
 
 # tests:
 #   - script: |

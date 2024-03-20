@@ -30,6 +30,12 @@ requirements:
     - qwt
     - matplotlib ==3.4.3
     - virtualgl
+    - qtconsole
+    - ipycanvas
+    - ipywidgets
+    - ipyevents
+    - notebook
+    #- xorg-x11-server-xvfb-cos7-x86_64
 
 # tests:
 #   - script: |
