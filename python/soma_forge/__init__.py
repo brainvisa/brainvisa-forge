@@ -77,11 +77,11 @@ def selected_recipes(selection=None):
         selection = ["selected"]
     selected_packages = set()
     for s in selection:
-        if s.startswith('-'):
+        if s.startswith("-"):
             s = s[1:].strip()
-            remove=True
+            remove = True
         else:
-            remove=False
+            remove = False
         m = metapackages.get(s)
         if m:
             s = m

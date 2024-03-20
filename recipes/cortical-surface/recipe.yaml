@@ -7,7 +7,7 @@ build:
   script: |
     cd "$CASA_BUILD"
     export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-    for component in cortical-surface-gpl cortical-surface-nonfree; do
+    for component in cortical_surface-gpl cortical_surface-nonfree; do
       make install-${component}
       make install-${component}-dev
       make install-${component}-usrdoc

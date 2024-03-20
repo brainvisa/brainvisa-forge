@@ -8,5 +8,4 @@ requirements:
     - disco
     - highres-cortex
     - morphologist
-    - nuclear-imaging
     - primatologist

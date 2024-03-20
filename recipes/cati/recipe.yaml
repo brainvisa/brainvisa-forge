@@ -2,24 +2,7 @@ package:
     name: cati
     version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
 
-# build:
-#   number: 0
-#   script: |
-#     cd "$CASA_BUILD"
-#     export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-#     for component in rsfmri; do
-#       make install-${component}
-#       make install-${component}-dev
-#       make install-${component}-usrdoc
-#       make install-${component}-devdoc
-#       make install-${component}-devdoc
-#       make install-${component}-devdoc
-#     done
-
 requirements:
-  # build:
-  #   - make
-
   run:
     - qualicati
     - cati-longitudinal
@@ -28,3 +11,4 @@ requirements:
     - cati-whasa
     - cati-deidentification
     - catidb
+    - nuclear-imaging
