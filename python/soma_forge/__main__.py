@@ -230,11 +230,11 @@ def test(name):
                 return 1
 
 
-def dot(conda):
+def dot(packages, conda):
     conda_forge = set()
     print("digraph {")
     print("  node [shape=box, color=black, style=filled]")
-    for recipe in selected_recipes():
+    for recipe in selected_recipes(packages):
         package = recipe["package"]["name"]
         if recipe["soma-forge"]["type"] == "brainvisa-cmake":
             print(f'  "{package}" [fillcolor="aquamarine"]')
@@ -321,6 +321,12 @@ parser_dot.add_argument(
     "--conda",
     action="store_true",
     help="include conda-forge packages",
+)
+parser_dot.add_argument(
+    "packages",
+    type=str,
+    nargs="*",
+    help="select packages using their names or Unix shell-like patterns",
 )
 parser_dot.set_defaults(func=dot)
 

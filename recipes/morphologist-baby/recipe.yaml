@@ -1,5 +1,5 @@
 package:
-    name: cati-longitudinal
+    name: morphologist-baby
     version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
 
 build:
@@ -7,7 +7,7 @@ build:
   script: |
     cd "$CASA_BUILD"
     export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-    for component in longitudinal_pipelines; do
+    for component in morphologist-baby; do
       make install-${component}
       make install-${component}-dev
       make install-${component}-usrdoc
@@ -21,5 +21,4 @@ requirements:
     - make
 
   run:
-    - soma
-    - anatomist
+    - morphologist

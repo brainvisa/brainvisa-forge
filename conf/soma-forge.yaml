@@ -1,7 +1,6 @@
 packages:
   - bioprocessing
-  - brainrat
-  - disco
-  - highres-cortex
-  - morphologist
-  - primatologist
+  - brainvisa
+  - constellation
+  - cortical-surface
+  - morphologist-baby

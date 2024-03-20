@@ -22,7 +22,7 @@ def read_recipes():
             yield recipe
 
 
-def selected_recipes():
+def selected_recipes(selection=None):
     """
     Iterate over recipes selected in configuration and their dependencies.
     """
@@ -61,13 +61,36 @@ def selected_recipes():
 
     # Read soma-forge configuration
     config_file = pixi_root / "conf" / "soma-forge.yaml"
-    selected_packages = no_dependency
+    all_packages = set(recipes)
+    selected_packages = all_packages
     if config_file.exists():
         with open(config_file) as f:
             config = yaml.safe_load(f)
             s = config.get("packages")
             if s:
-                selected_packages = set(s)
+                selected_packages = list(s)
+    metapackages = {
+        "all": all_packages,
+        "selected": selected_packages,
+    }
+    if not selection:
+        selection = ["selected"]
+    selected_packages = set()
+    for s in selection:
+        if s.startswith('-'):
+            s = s[1:].strip()
+            remove=True
+        else:
+            remove=False
+        m = metapackages.get(s)
+        if m:
+            s = m
+        else:
+            s = {s}
+        if remove:
+            selected_packages = selected_packages.difference(s)
+        else:
+            selected_packages.update(s)
 
     # Walk over selected packages and dependencies
     stack = list(selected_packages)

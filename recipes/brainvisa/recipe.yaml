@@ -1,0 +1,12 @@
+package:
+    name: brainvisa
+    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+
+requirements:
+  run:
+    - brainrat
+    - disco
+    - highres-cortex
+    - morphologist
+    - nuclear-imaging
+    - primatologist
