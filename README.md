@@ -55,6 +55,8 @@ pixi shell
 
 `bv_maker` can be used directly and built programs are in the PATH and ready to be used.
 
+Conda packages installed via pixi (as dependencies) are found in the `.pixi` sub-directory in the soma-forge directory.
+
 If one needs to make packages, use the following command:
 
 ```
