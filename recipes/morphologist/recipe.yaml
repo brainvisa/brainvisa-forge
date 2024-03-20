@@ -25,11 +25,13 @@ requirements:
     - soma
     - anatomist
     - soma-spm
+    - capsul
 
   run:
     - soma
     - anatomist
     - soma-spm
+    - capsul
 
 # tests:
 #   - script: |

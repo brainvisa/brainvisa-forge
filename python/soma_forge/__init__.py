@@ -12,6 +12,9 @@ pixi_root = pathlib.Path(os.environ["PIXI_PROJECT_ROOT"])
 
 
 def read_recipes():
+    """
+    Iterate over all recipes files defined in soma-forge.
+    """
     for recipe_file in (pixi_root / "recipes").glob("*/recipe.yaml"):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
@@ -20,17 +23,24 @@ def read_recipes():
 
 
 def selected_recipes():
+    """
+    Iterate over recipes selected in configuration and their dependencies.
+    """
     # Read recipes
     recipes = {r["package"]["name"]: r for r in read_recipes()}
 
     # Parse direct dependencies
     no_dependency = set(recipes)
     for package, recipe in recipes.items():
-        script = recipe.get("build", {}).get("script")
-        if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
-            recipe["soma-forge"]["type"] = "brainvisa-cmake"
+        build = recipe.get("build")
+        if build:
+            script = build.get("script")
+            if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
+                recipe["soma-forge"]["type"] = "brainvisa-cmake"
+            else:
+                recipe["soma-forge"]["type"] = "soma-forge"
         else:
-            recipe["soma-forge"]["type"] = "soma-forge"
+            recipe["soma-forge"]["type"] = "virtual"
 
         for requirement in recipe.get("requirements").get("run", []):
             if not isinstance(requirement, str) or requirement.startswith("$"):
@@ -42,8 +52,11 @@ def selected_recipes():
                     "conda-forge", set()
                 ).add(dependency)
             else:
+                type = recipe["soma-forge"]["type"]
+                if type == "virtual":
+                    type = "brainvisa-cmake"
                 recipe["soma-forge"].setdefault("requirements", {}).setdefault(
-                    recipe["soma-forge"]["type"], set()
+                    type, set()
                 ).add(dependency)
 
     # Read soma-forge configuration
@@ -77,7 +90,52 @@ def selected_recipes():
         stack.extend(i for i in dependencies if i not in done)
 
 
+def sorted_recipies():
+    """
+    Iterate over recipes sorted according to their depencencies starting with a
+    package without dependency.
+    """
+    recipes = {r["package"]["name"]: r for r in selected_recipes()}
+    ready = set()
+    inverted_dependencies = {}
+    for package, recipe in recipes.items():
+        dependencies = (
+            recipe["soma-forge"]
+            .get("requirements", {})
+            .get("brainvisa-cmake", set())
+            .union(
+                recipe["soma-forge"].get("requirements", {}).get("soma-forge", set())
+            )
+        )
+        if not dependencies:
+            ready.add(package)
+        for dependency in dependencies:
+            inverted_dependencies.setdefault(dependency, set()).add(package)
+
+    done = set()
+    while ready:
+        package = ready.pop()
+        yield recipes[package]
+        done.add(package)
+        for dependent in inverted_dependencies.get(package, []):
+            dependencies = (
+                recipes[dependent]["soma-forge"]
+                .get("requirements", {})
+                .get("brainvisa-cmake", set())
+                .union(
+                    recipes[dependent]["soma-forge"]
+                    .get("requirements", {})
+                    .get("soma-forge", set())
+                )
+            )
+            if all(d in done for d in dependencies):
+                ready.add(dependent)
+
+
 def forged_packages(name_re):
+    """
+    Iterate over name of packages that exists in local forge
+    """
     if isinstance(name_re, str):
         name_re = re.compile(name_re)
     for repodata_file in (pixi_root / "forge").glob("*/repodata.json"):
@@ -91,18 +149,24 @@ def forged_packages(name_re):
 
 
 def read_pixi_config():
+    """
+    Read pixi.toml file
+    """
     with open(pixi_root / "pixi.toml") as f:
         return toml.load(f)
 
 
 def write_pixi_config(pixi_config):
+    """
+    wite pixi.toml file
+    """
     with open(pixi_root / "pixi.toml", "w") as f:
         toml.dump(pixi_config, f, encoder=toml.TomlPreserveCommentEncoder())
 
 
 def get_test_commands(log_lines=None):
     """
-    Use ctest to extract command lines to execute to run tests.
+    Use ctest to extract command lines to execute in order to run tests.
     This function returns a dictionary whose keys are name of a test (i.e.
     'axon', 'soma', etc.) and values are a list of commands to run to perform
     the test.

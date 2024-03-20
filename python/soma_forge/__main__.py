@@ -8,6 +8,7 @@ import sys
 
 from . import (
     selected_recipes,
+    sorted_recipies,
     pixi_root,
     forged_packages,
     read_pixi_config,
@@ -140,7 +141,7 @@ def forge(packages, force, show, test=True, check_build=True, verbose=None):
     if check_build and not (pixi_root / "build" / "success").exists():
         build()
     channels = read_pixi_config()["project"]["channels"]
-    for recipe in selected_recipes():
+    for recipe in sorted_recipies():
         package = recipe["package"]["name"]
         recipe_dir = recipe["soma-forge"]["recipe_dir"]
         if selector.match(package):
@@ -237,6 +238,8 @@ def dot(conda):
         package = recipe["package"]["name"]
         if recipe["soma-forge"]["type"] == "brainvisa-cmake":
             print(f'  "{package}" [fillcolor="aquamarine"]')
+        elif recipe["soma-forge"]["type"] == "virtual":
+            print(f'  "{package}" [fillcolor="darkolivegreen2"]')
         else:
             print(f'  "{package}" [fillcolor="bisque"]')
         for dependency in (

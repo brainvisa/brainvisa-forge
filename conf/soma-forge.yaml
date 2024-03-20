@@ -1,0 +1,7 @@
+packages:
+  - bioprocessing
+  - brainrat
+  - disco
+  - highres-cortex
+  - morphologist
+  - primatologist
