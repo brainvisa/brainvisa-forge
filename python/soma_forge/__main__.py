@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 from . import (
-    read_recipes,
-    sorted_recipes_packages,
+    selected_recipes,
     pixi_root,
     forged_packages,
     read_pixi_config,
@@ -22,7 +21,7 @@ def setup(verbose=None):
     external_recipes = []
     bv_maker_recipes = []
     bv_maker_packages = set()
-    for recipe in read_recipes():
+    for recipe in selected_recipes():
         script = recipe.get("build", {}).get("script")
         if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
             bv_maker_recipes.append(recipe)
@@ -141,7 +140,9 @@ def forge(packages, force, show, test=True, check_build=True, verbose=None):
     if check_build and not (pixi_root / "build" / "success").exists():
         build()
     channels = read_pixi_config()["project"]["channels"]
-    for package, recipe_dir in sorted_recipes_packages():
+    for recipe in selected_recipes():
+        package = recipe["package"]["name"]
+        recipe_dir = recipe["soma-forge"]["recipe_dir"]
         if selector.match(package):
             if not force:
                 # Check for the package exsitence
@@ -229,45 +230,31 @@ def test(name):
 
 
 def dot(conda):
-    bv_maker_packages = set()
-    external_packages = set()
-    conda_forge_packages = set()
-    dependencies = {}
-
-    recipes = list(read_recipes())
-    for recipe in recipes:
-        script = recipe.get("build", {}).get("script")
-        if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
-            bv_maker_packages.add(recipe["package"]["name"])
-        else:
-            external_packages.add(recipe["package"]["name"])
-
-    build_packages = bv_maker_packages.union(external_packages)
-    for recipe in recipes:
-        for requirement in recipe.get("requirements").get("run", []):
-            if not isinstance(requirement, str) or requirement.startswith('$'):
-                continue
-            dependency = requirement.split(None, 1)[0]
-            if dependency not in build_packages:
-                conda_forge_packages.add(dependency)
-            dependencies.setdefault(recipe["package"]["name"], set()).add(
-                dependency
-            )
-
+    conda_forge = set()
     print("digraph {")
     print("  node [shape=box, color=black, style=filled]")
-    for package in bv_maker_packages:
-        print(f'  "{package}" [fillcolor="aquamarine"]')
-    for package in external_packages:
-        print(f'  "{package}" [fillcolor="bisque"]')
-    if conda:
-        for package in conda_forge_packages:
-            print(f'"{package}" [fillcolor="aliceblue"]')
-
-    for src, dests in dependencies.items():
-        for dest in dests:
-            if conda or dest not in conda_forge_packages:
-                print(f'"{src}" -> "{dest}"')
+    for recipe in selected_recipes():
+        package = recipe["package"]["name"]
+        if recipe["soma-forge"]["type"] == "brainvisa-cmake":
+            print(f'  "{package}" [fillcolor="aquamarine"]')
+        else:
+            print(f'  "{package}" [fillcolor="bisque"]')
+        for dependency in (
+            recipe["soma-forge"].get("requirements", {}).get("brainvisa-cmake", [])
+        ):
+            print(f'  "{package}" -> "{dependency}"')
+        for dependency in (
+            recipe["soma-forge"].get("requirements", {}).get("soma-forge", [])
+        ):
+            print(f'  "{package}" -> "{dependency}"')
+        if conda:
+            for dependency in (
+                recipe["soma-forge"].get("requirements", {}).get("conda-forge", [])
+            ):
+                conda_forge.add(dependency)
+                print(f'  "{package}" -> "{dependency}"')
+    for package in conda_forge:
+        print(f'  "{package}" [fillcolor="aliceblue"]')
     print("}")
 
 

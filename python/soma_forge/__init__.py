@@ -11,43 +11,70 @@ import yaml
 pixi_root = pathlib.Path(os.environ["PIXI_PROJECT_ROOT"])
 
 
-def read_recipes(verbose=None):
+def read_recipes():
     for recipe_file in (pixi_root / "recipes").glob("*/recipe.yaml"):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
-            recipe["recipe_dir"] = str(recipe_file.parent)
+            recipe["soma-forge"] = {"recipe_dir": str(recipe_file.parent)}
             yield recipe
 
 
-def sorted_recipes_packages():
-    # Put recipes in dict
-    recipes = {i["package"]["name"]: i for i in read_recipes()}
-    # Parse recipes dependencies
-    ready = set(recipes)
-    waiting = set()
-    dependent = {}
-    depends = {}
-    for package_name, recipe in recipes.items():
-        for _, requirements in recipe.get("requirements").items():
-            for requirement in requirements:
-                if not isinstance(requirement, str):
-                    continue
-                dependency = requirement.split(None, 1)[0]
-                if dependency in recipes:
-                    ready.discard(package_name)
-                    waiting.add(package_name)
-                    depends.setdefault(package_name, set()).add(dependency)
-                    dependent.setdefault(dependency, set()).add(package_name)
+def selected_recipes():
+    # Read recipes
+    recipes = {r["package"]["name"]: r for r in read_recipes()}
 
+    # Parse direct dependencies
+    no_dependency = set(recipes)
+    for package, recipe in recipes.items():
+        script = recipe.get("build", {}).get("script")
+        if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
+            recipe["soma-forge"]["type"] = "brainvisa-cmake"
+        else:
+            recipe["soma-forge"]["type"] = "soma-forge"
+
+        for requirement in recipe.get("requirements").get("run", []):
+            if not isinstance(requirement, str) or requirement.startswith("$"):
+                continue
+            dependency = requirement.split(None, 1)[0]
+            no_dependency.discard(dependency)
+            if dependency not in recipes:
+                recipe["soma-forge"].setdefault("requirements", {}).setdefault(
+                    "conda-forge", set()
+                ).add(dependency)
+            else:
+                recipe["soma-forge"].setdefault("requirements", {}).setdefault(
+                    recipe["soma-forge"]["type"], set()
+                ).add(dependency)
+
+    # Read soma-forge configuration
+    config_file = pixi_root / "conf" / "soma-forge.yaml"
+    selected_packages = no_dependency
+    if config_file.exists():
+        with open(config_file) as f:
+            config = yaml.safe_load(f)
+            s = config.get("packages")
+            if s:
+                selected_packages = set(s)
+
+    # Walk over selected packages and dependencies
+    stack = list(selected_packages)
     done = set()
-    while ready:
-        package = ready.pop()
-        yield package, recipes[package]["recipe_dir"]
+    while stack:
+        package = stack.pop(0)
+        if package in done:
+            continue
+        recipe = recipes[package]
+        yield recipe
         done.add(package)
-        for r in dependent.get(package, ()):
-            if all(i in done for i in depends.get(r, ())):
-                waiting.discard(r)
-                ready.add(r)
+        dependencies = (
+            recipe["soma-forge"]
+            .get("requirements", {})
+            .get("brainvisa-cmake", set())
+            .union(
+                recipe["soma-forge"].get("requirements", {}).get("soma-forge", set())
+            )
+        )
+        stack.extend(i for i in dependencies if i not in done)
 
 
 def forged_packages(name_re):
