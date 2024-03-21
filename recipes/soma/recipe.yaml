@@ -47,6 +47,11 @@ requirements:
     - pyyaml
     - libminc
     - openjpeg
+    - pywebp
+
+  #run_constrained:
+    #- pygltflib
+    #- DracoPy
 
 tests:
   - script: |

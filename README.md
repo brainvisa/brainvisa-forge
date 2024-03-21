@@ -30,9 +30,12 @@ pixi shell
 ## Packages
 
 The packages currently built have the following dependencies:
-green = package containing brainvisa-cmake components ; bisque = external dependency not found in conda-forge ; light blue = package from conda-forge.
+- green: package containing brainvisa-cmake components ;
+- olive: empty package with dependencies ;
+- bisque: external dependency not found in conda-forge ; 
+- light blue: package from conda-forge.
 
-![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/66c52733-8714-4a29-be68-8f42161fe4a1)
+![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/c34edacd-ec27-49b4-b68d-75505390d63b)
 
 ## Building from sources and packaging
 
@@ -51,6 +54,8 @@ pixi shell
 ```
 
 `bv_maker` can be used directly and built programs are in the PATH and ready to be used.
+
+Conda packages installed via pixi (as dependencies) are found in the `.pixi` sub-directory in the soma-forge directory.
 
 If one needs to make packages, use the following command:
 
