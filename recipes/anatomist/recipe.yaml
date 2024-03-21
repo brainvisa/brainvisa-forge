@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: anatomist
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -22,11 +25,9 @@ requirements:
     - libstdcxx-devel_linux-64
     - cmake
     - make
-    - soma
-    - qwt
 
   run:
-    - soma
+    - soma ==${{ distro_version }}
     - qwt
     - matplotlib ==3.4.3
     - virtualgl

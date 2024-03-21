@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: morphologist
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -22,24 +25,13 @@ requirements:
     - libstdcxx-devel_linux-64
     - cmake
     - make
-    - soma
-    - anatomist
-    - soma-spm
-    - capsul
 
   run:
-    - soma
-    - anatomist
-    - soma-spm
-    - capsul
-
-# tests:
-#   - script: |
-#       cd "$CASA_BUILD"
-#       python -m soma_forge test soma
-#       python -m soma_forge test aims
-#       python -m soma_forge test axon
-
-#     requirements:
-#       run:
-#         - cmake
+    - soma ==${{ distro_version }}
+    - anatomist ==${{ distro_version }}
+    - soma-spm ==${{ distro_version }}
+    - capsul ==${{ distro_version }}
+    # Following dependencies are required to run "morphologist"
+    - configobj
+    - pyqtwebkit
+    - traits

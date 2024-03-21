@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: soma
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -32,7 +35,6 @@ requirements:
     - pkgconfig
     - numpy
     - pyyaml
-    - soma-python
     - libminc
     - openjpeg
 
@@ -40,11 +42,9 @@ requirements:
     - libblitz
     - boost-cpp
     - dcmtk
-    - soma-python
-    - dcmtk
+    - soma-python ==${{ distro_version }}
     - numpy
     - pyyaml
-    - soma-python
     - libminc
     - openjpeg
 

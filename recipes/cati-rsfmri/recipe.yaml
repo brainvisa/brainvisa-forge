@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: cati-rsfmri
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -21,5 +24,5 @@ requirements:
     - make
 
   run:
-    - soma
-    - anatomist
+    - soma ==${{ distro_version }}
+    - anatomist ==${{ distro_version }}

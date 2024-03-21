@@ -1,7 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: capsul
-    # version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/src/capsul/pyproject.toml").project.version }}
-    version: 3.0.0
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -22,7 +24,7 @@ requirements:
     - make
   
   run:
-    - soma-python
+    - soma-python ==${{ distro_version }}
     - redis-py <4.5.0
     - redis-server <7
     - pyyaml

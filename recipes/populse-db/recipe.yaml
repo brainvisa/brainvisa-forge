@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: populse-db
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/src/populse_db/pyproject.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0

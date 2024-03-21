@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: soma-freesurfer
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -21,15 +24,5 @@ requirements:
     - make
 
   run:
-    - soma
-    - morphologist
-
-# tests:
-#   - script: "python -m soma.tests"
-#     requirements:
-#       run:
-#         - pytest
-#   - script: "python -m soma_workflow.test"
-#     requirements:
-#       run:
-#         - pytest
+    - soma ==${{ distro_version }}
+    - morphologist ==${{ distro_version }}

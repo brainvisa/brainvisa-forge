@@ -1,6 +1,9 @@
+context:
+    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
+
 package:
     name: cortical-surface
-    version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }}
+    version: ${{ distro_version }}
 
 build:
   number: 0
@@ -21,6 +24,6 @@ requirements:
     - make
 
   run:
-    - morphologist
-    - soma-freesurfer
+    - morphologist ==${{ distro_version }}
+    - soma-freesurfer ==${{ distro_version }}
 
